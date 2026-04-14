@@ -21,7 +21,7 @@ exports.handler = async function(event) {
 
   const payload = {
     model: 'claude-sonnet-4-6',
-    max_tokens: 512,
+    max_tokens: 1024,
     messages: body.messages
   };
   if (body.system) payload.system = body.system;
