@@ -4,9 +4,7 @@ exports.handler = async (event) => {
   const BASE = 'https://api.tradier.com/v1';
   const AUTH = { 'Authorization': `Bearer ${process.env.Tradier_Token}`, 'Accept': 'application/json' };
   const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
-
   if (!type) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing type parameter' }) };
-
   let url;
   try {
     if (type === 'quotes') {
@@ -20,6 +18,13 @@ exports.handler = async (event) => {
       if (start) params.append('start', start);
       if (end) params.append('end', end);
       url = `${BASE}/markets/history?${params.toString()}`;
+    } else if (type === 'timesales') {
+      const { symbol, interval, start, end } = p;
+      if (!symbol) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing symbol' }) };
+      const params = new URLSearchParams({ symbol, interval: interval || '15min' });
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
+      url = `${BASE}/markets/timesales?${params.toString()}`;
     } else if (type === 'options') {
       const { symbol, expiration } = p;
       if (!symbol) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing symbol' }) };
@@ -33,7 +38,6 @@ exports.handler = async (event) => {
     } else {
       return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: `Unknown type: ${type}` }) };
     }
-
     const res = await fetch(url, { headers: AUTH });
     const data = await res.json();
     return { statusCode: 200, headers: CORS, body: JSON.stringify(data) };
